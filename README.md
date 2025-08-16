@@ -75,17 +75,18 @@ Your app should now be running at http://localhost:3000.
 
 ---
 
-📸 Screenshots
-Authentication & Onboarding
+### 📸 Screenshots
+
+**Authentication & Onboarding**  
 <img src="screenshots/auth.png" alt="Authentication" width="800"/>
 
-Dashboard Overview
+**Dashboard Overview**  
 <img src="screenshots/dashboard.png" alt="Dashboard" width="800"/>
 
-Group Expense Management
+**Group Expense Management**  
 <img src="screenshots/group.png" alt="Group Expenses" width="800"/>
 
-Settlements & Payments
+**Settlements & Payments**  
 <img src="screenshots/settlement.png" alt="Settlements" width="800"/>
 
 ---
