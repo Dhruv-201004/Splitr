@@ -20,10 +20,12 @@ export default function GroupExpensesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("expenses");
 
+  // Fetch group details, members, expenses, settlements, and balances
   const { data, isLoading } = useConvexQuery(api.groups.getGroupExpenses, {
     groupId: params.id,
   });
 
+  // Show loading state
   if (isLoading) {
     return (
       <div className="container !mx-auto !py-12">
@@ -32,6 +34,7 @@ export default function GroupExpensesPage() {
     );
   }
 
+  // Extract data with fallbacks
   const group = data?.group;
   const members = data?.members || [];
   const expenses = data?.expenses || [];
@@ -41,6 +44,7 @@ export default function GroupExpensesPage() {
 
   return (
     <div className="container !mx-auto !py-6 max-w-4xl">
+      {/* Page header with back button and group info */}
       <div className="!mb-6">
         <Button
           variant="outline"
@@ -53,6 +57,7 @@ export default function GroupExpensesPage() {
         </Button>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+          {/* Group details */}
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 !p-4 rounded-md">
               <Users className="h-8 w-8 text-primary" />
@@ -66,6 +71,7 @@ export default function GroupExpensesPage() {
             </div>
           </div>
 
+          {/* Action buttons */}
           <div className="flex gap-2">
             <Button asChild variant="outline">
               <Link href={`/settlements/group/${params.id}`}>
@@ -83,8 +89,9 @@ export default function GroupExpensesPage() {
         </div>
       </div>
 
-      {/* Grid layout for group details */}
+      {/* Grid layout with balances and members */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 !mb-6">
+        {/* Group balances */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="!pb-2">
@@ -96,6 +103,7 @@ export default function GroupExpensesPage() {
           </Card>
         </div>
 
+        {/* Members list */}
         <div>
           <Card>
             <CardHeader className="!pb-2">
@@ -124,6 +132,7 @@ export default function GroupExpensesPage() {
           </TabsTrigger>
         </TabsList>
 
+        {/* Expenses list */}
         <TabsContent value="expenses" className="space-y-4">
           <ExpenseList
             expenses={expenses}
@@ -133,6 +142,7 @@ export default function GroupExpensesPage() {
           />
         </TabsContent>
 
+        {/* Settlements list */}
         <TabsContent value="settlements" className="space-y-4">
           <SettlementList
             settlements={settlements}

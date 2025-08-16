@@ -5,21 +5,10 @@ import { api } from "@/convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
-/**
- * Expected `balances` shape (one object per member):
- * {
- *   id:           string;           // user id
- *   name:         string;
- *   imageUrl?:    string;
- *   totalBalance: number;           // + ve ⇒ they are owed, – ve ⇒ they owe
- *   owes:   { to: string;   amount: number }[];  // this member → others
- *   owedBy: { from: string; amount: number }[];  // others → this member
- * }
- */
 export function GroupBalances({ balances }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
 
-  /* ───── guards ────────────────────────────────────────────────────────── */
+  /* ───── Guard clauses ───── */
   if (!balances?.length || !currentUser) {
     return (
       <div className="text-center !py-4 text-muted-foreground">
@@ -28,7 +17,7 @@ export function GroupBalances({ balances }) {
     );
   }
 
-  /* ───── helpers ───────────────────────────────────────────────────────── */
+  // Get current user's balance record
   const me = balances.find((b) => b.id === currentUser._id);
   if (!me) {
     return (
@@ -38,28 +27,30 @@ export function GroupBalances({ balances }) {
     );
   }
 
+  // Build a quick lookup map of users
   const userMap = Object.fromEntries(balances.map((b) => [b.id, b]));
 
-  // Who owes me?
+  // Members who owe the current user
   const owedByMembers = me.owedBy
     .map(({ from, amount }) => ({ ...userMap[from], amount }))
     .sort((a, b) => b.amount - a.amount);
 
-  // Whom do I owe?
+  // Members the current user owes
   const owingToMembers = me.owes
     .map(({ to, amount }) => ({ ...userMap[to], amount }))
     .sort((a, b) => b.amount - a.amount);
 
+  // Check if everything is settled up
   const isAllSettledUp =
     me.totalBalance === 0 &&
     owedByMembers.length === 0 &&
     owingToMembers.length === 0;
 
-  /* ───── UI ────────────────────────────────────────────────────────────── */
+  /* ───── UI rendering ───── */
   return (
     <div className="space-y-4">
-      {/* Current user's total balance */}
-      <div className="text-center !pb-4 border-b">
+      {/* Current user's total balance summary */}
+      <div className="text-center !mb-4 !pb-4 border-b">
         <p className="text-sm text-muted-foreground !mb-1">Your balance</p>
         <p
           className={`text-2xl font-bold ${
@@ -85,13 +76,14 @@ export function GroupBalances({ balances }) {
         </p>
       </div>
 
+      {/* Show either all-settled message or owed/owing breakdown */}
       {isAllSettledUp ? (
         <div className="text-center !py-4">
           <p className="text-muted-foreground">Everyone is settled up!</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {/* People who owe the current user */}
+          {/* Section: People who owe the current user */}
           {owedByMembers.length > 0 && (
             <div className="!mb-4">
               <h3 className="text-sm font-medium flex items-center !mb-3">
@@ -102,7 +94,7 @@ export function GroupBalances({ balances }) {
                 {owedByMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between !mb-3"
                   >
                     <div className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
@@ -122,7 +114,7 @@ export function GroupBalances({ balances }) {
             </div>
           )}
 
-          {/* People the current user owes */}
+          {/* Section: People the current user owes */}
           {owingToMembers.length > 0 && (
             <div>
               <h3 className="text-sm font-medium flex items-center !mb-3">

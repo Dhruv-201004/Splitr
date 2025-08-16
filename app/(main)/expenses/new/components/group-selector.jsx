@@ -16,13 +16,13 @@ import {
 export function GroupSelector({ onChange }) {
   const [selectedGroupId, setSelectedGroupId] = useState("");
 
-  // Single query to get all data we need
+  // Fetch groups and selected group details in a single query
   const { data, isLoading } = useConvexQuery(
     api.groups.getGroupOrMembers,
     selectedGroupId ? { groupId: selectedGroupId } : {}
   );
 
-  // When group data changes, notify parent
+  // Notify parent when a group is selected
   useEffect(() => {
     if (data?.selectedGroup && onChange) {
       onChange(data.selectedGroup);
@@ -68,6 +68,7 @@ export function GroupSelector({ onChange }) {
         </SelectContent>
       </Select>
 
+      {/* Show loader when switching groups */}
       {isLoading && selectedGroupId && (
         <div className="!mt-2">
           <BarLoader width={"100%"} color="#36d7b7" />

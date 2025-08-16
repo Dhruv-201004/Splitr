@@ -18,12 +18,13 @@ import { Button } from "./ui/button";
 import { LayoutDashboard } from "lucide-react";
 
 const header = () => {
-  const { isLoading } = useStoreUser();
-  const path = usePathname(); 
+  const { isLoading } = useStoreUser(); // Track loading state of user
+  const path = usePathname(); // Current route path
 
   return (
     <header className="fixed top-0 w-full border-b bg-white/95 backdrop-blur z-50 supports-[backdrop-filter]:bg-white/60">
       <nav className="container !mx-auto !px-4 h-16 flex items-center justify-between">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
             src={"/logos/logo.png"}
@@ -34,6 +35,7 @@ const header = () => {
           />
         </Link>
 
+        {/* Show navigation links only on homepage */}
         {path === "/" && (
           <div className="hidden md:flex items-center gap-6">
             <Link
@@ -52,8 +54,10 @@ const header = () => {
         )}
 
         <div className="flex items-center gap-4">
+          {/* Authenticated view */}
           <Authenticated>
             <Link href="/dashboard">
+              {/* Desktop dashboard button */}
               <Button
                 variant="outline"
                 className="hidden md:inline-flex items-center gap-2 hover:text-green-600 hover:border-green-600 transition !px-2 !py-4"
@@ -61,11 +65,13 @@ const header = () => {
                 <LayoutDashboard className="h-4 w-4" />
                 Dashboard
               </Button>
+              {/* Mobile dashboard button */}
               <Button variant="ghost" className="md:hidden w-10 h-10 !p-0">
                 <LayoutDashboard className="h-4 w-4" />
               </Button>
             </Link>
 
+            {/* User profile menu */}
             <UserButton
               appearance={{
                 elements: {
@@ -78,6 +84,7 @@ const header = () => {
             />
           </Authenticated>
 
+          {/* Unauthenticated view */}
           <Unauthenticated>
             <SignInButton>
               <Button variant="ghost" className="!px-2 !py-4">
@@ -93,6 +100,8 @@ const header = () => {
           </Unauthenticated>
         </div>
       </nav>
+
+      {/* Show loading bar while user data is being fetched */}
       {isLoading && <BarLoader width={"100%"} color={"#36d7b7"} />}
     </header>
   );

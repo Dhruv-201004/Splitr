@@ -10,6 +10,7 @@ export default function NewExpensePage() {
 
   return (
     <div className="container max-w-3xl !mx-auto !py-6">
+      {/* Page header */}
       <div className="!mb-6">
         <h1 className="text-5xl gradient-title">Add a new expense</h1>
         <p className="text-muted-foreground !mt-1">
@@ -17,6 +18,7 @@ export default function NewExpensePage() {
         </p>
       </div>
 
+      {/* Expense form with tabs for individual or group */}
       <Card>
         <CardContent>
           <Tabs className="!pb-3" defaultValue="individual">
@@ -24,12 +26,16 @@ export default function NewExpensePage() {
               <TabsTrigger value="individual">Individual Expense</TabsTrigger>
               <TabsTrigger value="group">Group Expense</TabsTrigger>
             </TabsList>
+
+            {/* Individual expense form */}
             <TabsContent value="individual" className="!mt-0">
               <ExpenseForm
                 type="individual"
                 onSuccess={(id) => router.push(`/person/${id}`)}
               />
             </TabsContent>
+
+            {/* Group expense form */}
             <TabsContent value="group" className="!mt-0">
               <ExpenseForm
                 type="group"

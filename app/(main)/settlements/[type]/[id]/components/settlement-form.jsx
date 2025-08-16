@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-// Form schema validation
+// Schema for validating settlement form fields
 const settlementSchema = z.object({
   amount: z
     .string()
@@ -30,7 +30,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const createSettlement = useConvexMutation(api.settlements.createSettlement);
 
-  // Set up form with validation
+  // Setup form with validation and default values
   const {
     register,
     handleSubmit,
@@ -45,15 +45,14 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     },
   });
 
-  // Get selected payment direction
+  // Track current payment type
   const paymentType = watch("paymentType");
 
-  // Single user settlement
+  // Create settlement between two individual users
   const handleUserSettlement = async (data) => {
     const amount = parseFloat(data.amount);
 
     try {
-      // Determine payer and receiver based on the selected payment type
       const paidByUserId =
         data.paymentType === "youPaid"
           ? currentUser._id
@@ -69,7 +68,6 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
         note: data.note,
         paidByUserId,
         receivedByUserId,
-        // No groupId for user settlements
       });
 
       toast.success("Settlement recorded successfully!");
@@ -79,7 +77,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     }
   };
 
-  // Group settlement
+  // Create settlement within a group context
   const handleGroupSettlement = async (data, selectedUserId) => {
     if (!selectedUserId) {
       toast.error("Please select a group member to settle with");
@@ -89,7 +87,6 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     const amount = parseFloat(data.amount);
 
     try {
-      // Get the selected user from the group balances
       const selectedUser = entityData.balances.find(
         (balance) => balance.userId === selectedUserId
       );
@@ -99,7 +96,6 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
         return;
       }
 
-      // Determine payer and receiver based on the selected payment type and balances
       const paidByUserId =
         data.paymentType === "youPaid" ? currentUser._id : selectedUser.userId;
 
@@ -121,7 +117,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     }
   };
 
-  // Handle form submission
+  // Decide between user or group settlement on submit
   const onSubmit = async (data) => {
     if (entityType === "user") {
       await handleUserSettlement(data);
@@ -130,19 +126,19 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     }
   };
 
-  // For group settlements, we need to select a member
+  // Track which group member is selected for settlement
   const [selectedGroupMemberId, setSelectedGroupMemberId] = useState(null);
 
   if (!currentUser) return null;
 
-  // Render the form for individual settlement
+  // --- Individual settlement form ---
   if (entityType === "user") {
     const otherUser = entityData.counterpart;
     const netBalance = entityData.netBalance;
 
     return (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Balance information */}
+        {/* Display current balance between user and counterpart */}
         <div className="bg-muted !p-4 rounded-lg !mb-4">
           <h3 className="font-medium !mb-2">Current balance</h3>
           {netBalance === 0 ? (
@@ -168,7 +164,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
           )}
         </div>
 
-        {/* Payment direction */}
+        {/* Payment direction selection */}
         <div className="space-y-2 !mb-6">
           <Label>Who paid?</Label>
           <RadioGroup
@@ -181,6 +177,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
               });
             }}
           >
+            {/* You paid option */}
             <div className="flex items-center space-x-2 border rounded-md !p-3">
               <RadioGroupItem value="youPaid" id="youPaid" />
               <Label htmlFor="youPaid" className="flex-grow cursor-pointer">
@@ -196,6 +193,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
               </Label>
             </div>
 
+            {/* They paid option */}
             <div className="flex items-center space-x-2 border rounded-md !p-3">
               <RadioGroupItem value="theyPaid" id="theyPaid" />
               <Label htmlFor="theyPaid" className="flex-grow cursor-pointer">
@@ -211,7 +209,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
           </RadioGroup>
         </div>
 
-        {/* Amount */}
+        {/* Settlement amount input */}
         <div className="space-y-2 !mb-6">
           <Label htmlFor="amount">Amount</Label>
           <div className="relative">
@@ -231,7 +229,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
           )}
         </div>
 
-        {/* Note */}
+        {/* Optional note field */}
         <div className="space-y-2 !mb-6">
           <Label htmlFor="note">Note (optional)</Label>
           <Textarea
@@ -241,6 +239,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
           />
         </div>
 
+        {/* Submit settlement */}
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Recording..." : "Record settlement"}
         </Button>
@@ -248,20 +247,20 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
     );
   }
 
-  // Render form for group settlement
+  // --- Group settlement form ---
   if (entityType === "group") {
     const groupMembers = entityData.balances;
 
     return (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Select group member */}
+        {/* Member selection for settlement */}
         <div className="space-y-2 !mb-6">
           <Label>Who are you settling with?</Label>
           <div className="space-y-2 !mb-2">
             {groupMembers.map((member) => {
               const isSelected = selectedGroupMemberId === member.userId;
-              const isOwing = member.netBalance < 0; // negative means they owe you
-              const isOwed = member.netBalance > 0; // positive means you owe them
+              const isOwing = member.netBalance < 0;
+              const isOwed = member.netBalance > 0;
 
               return (
                 <div
@@ -308,9 +307,10 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
           )}
         </div>
 
+        {/* Show payment direction and amount only after member is selected */}
         {selectedGroupMemberId && (
           <>
-            {/* Payment direction */}
+            {/* Payment direction selection */}
             <div className="space-y-2 !mb-6">
               <Label>Who paid?</Label>
               <RadioGroup
@@ -323,6 +323,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                   });
                 }}
               >
+                {/* You paid option */}
                 <div className="flex items-center space-x-2 border rounded-md !p-3">
                   <RadioGroupItem value="youPaid" id="youPaid" />
                   <Label htmlFor="youPaid" className="flex-grow cursor-pointer">
@@ -345,6 +346,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
                   </Label>
                 </div>
 
+                {/* They paid option */}
                 <div className="flex items-center space-x-2 border rounded-md !p-3">
                   <RadioGroupItem value="theyPaid" id="theyPaid" />
                   <Label
@@ -380,7 +382,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
               </RadioGroup>
             </div>
 
-            {/* Amount */}
+            {/* Settlement amount input */}
             <div className="space-y-2 !mb-6">
               <Label htmlFor="amount">Amount</Label>
               <div className="relative">
@@ -400,7 +402,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
               )}
             </div>
 
-            {/* Note */}
+            {/* Optional note field */}
             <div className="space-y-2 !mb-6">
               <Label htmlFor="note">Note (optional)</Label>
               <Textarea
@@ -412,6 +414,7 @@ export default function SettlementForm({ entityType, entityData, onSuccess }) {
           </>
         )}
 
+        {/* Submit settlement */}
         <Button
           type="submit"
           className="w-full"

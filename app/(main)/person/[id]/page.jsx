@@ -19,6 +19,7 @@ export default function PersonExpensesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("expenses");
 
+  // Fetch expenses and settlements for a specific user
   const { data, isLoading } = useConvexQuery(
     api.expenses.getExpensesBetweenUsers,
     { userId: params.id }
@@ -40,6 +41,7 @@ export default function PersonExpensesPage() {
   return (
     <div className="container !mx-auto !py-6 max-w-4xl">
       <div className="!mb-6">
+        {/* Back navigation */}
         <Button
           variant="outline"
           size="sm"
@@ -50,6 +52,7 @@ export default function PersonExpensesPage() {
           Back
         </Button>
 
+        {/* User details header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-16 w-16">
@@ -64,6 +67,7 @@ export default function PersonExpensesPage() {
             </div>
           </div>
 
+          {/* Action buttons */}
           <div className="flex gap-2 ">
             <Button asChild variant="outline" className="!py-2 !px-3">
               <Link href={`/settlements/user/${params.id}`}>
@@ -71,7 +75,7 @@ export default function PersonExpensesPage() {
                 Settle up
               </Link>
             </Button>
-            <Button asChild >
+            <Button asChild>
               <Link href={`/expenses/new`}>
                 <PlusCircle className="!mr-2 h-4 w-4" />
                 Add expense
@@ -81,7 +85,7 @@ export default function PersonExpensesPage() {
         </div>
       </div>
 
-      {/* Balance card */}
+      {/* Balance summary */}
       <Card className="!mb-6">
         <CardHeader className="!pb-2">
           <CardTitle className="text-xl">Balance</CardTitle>
@@ -103,7 +107,13 @@ export default function PersonExpensesPage() {
               )}
             </div>
             <div
-              className={`text-2xl font-bold ${balance > 0 ? "text-green-600" : balance < 0 ? "text-red-600" : ""}`}
+              className={`text-2xl font-bold ${
+                balance > 0
+                  ? "text-green-600"
+                  : balance < 0
+                    ? "text-red-600"
+                    : ""
+              }`}
             >
               ${Math.abs(balance).toFixed(2)}
             </div>
@@ -111,7 +121,7 @@ export default function PersonExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Tabs for expenses and settlements */}
+      {/* Expenses and settlements tabs */}
       <Tabs
         defaultValue="expenses"
         value={activeTab}

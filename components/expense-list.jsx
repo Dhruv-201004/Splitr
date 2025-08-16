@@ -22,6 +22,7 @@ export function ExpenseList({
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const deleteExpense = useConvexMutation(api.expenses.deleteExpense);
 
+  // Render fallback UI if no expenses available
   if (!expenses || !expenses.length) {
     return (
       <Card>
@@ -32,10 +33,8 @@ export function ExpenseList({
     );
   }
 
-  // Helper to get user details from cache or look up from expense
+  // Resolve user details based on ID, fallback to "Other User"
   const getUserDetails = (userId) => {
-    // For the group context, we need to look up members from somewhere else
-    // This is a simplified fallback
     return {
       name:
         userId === currentUser?._id
@@ -46,7 +45,7 @@ export function ExpenseList({
     };
   };
 
-  // Check if the user can delete an expense (creator or payer)
+  // Determine if current user has permission to delete the expense
   const canDeleteExpense = (expense) => {
     if (!currentUser) return false;
     return (
@@ -55,13 +54,11 @@ export function ExpenseList({
     );
   };
 
-  // Handle delete expense
+  // Delete expense with confirmation and error handling
   const handleDeleteExpense = async (expense) => {
-    // Use basic JavaScript confirm
     const confirmed = window.confirm(
       "Are you sure you want to delete this expense? This action cannot be undone."
     );
-
     if (!confirmed) return;
 
     try {
@@ -88,8 +85,8 @@ export function ExpenseList({
           >
             <CardContent className="!py-4">
               <div className="flex items-center justify-between">
+                {/* Expense summary with category icon and metadata */}
                 <div className="flex items-center gap-3">
-                  {/* Category icon */}
                   <div className="bg-primary/10 !p-2 rounded-full">
                     <CategoryIcon className="h-5 w-5 text-primary" />
                   </div>
@@ -112,6 +109,7 @@ export function ExpenseList({
                   </div>
                 </div>
 
+                {/* Amount, group indicator, and delete option */}
                 <div className="flex items-center gap-2">
                   <div className="text-right">
                     <div className="font-medium">
@@ -148,7 +146,7 @@ export function ExpenseList({
                 </div>
               </div>
 
-              {/* Display splits info */}
+              {/* Expense split details per user */}
               <div className="!mt-3 text-sm">
                 <div className="flex gap-2 flex-wrap">
                   {expense.splits.map((split, idx) => {

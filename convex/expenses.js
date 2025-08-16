@@ -10,7 +10,7 @@ export const createExpense = mutation({
     category: v.optional(v.string()),
     date: v.number(), // timestamp
     paidByUserId: v.id("users"),
-    splitType: v.string(), // "equal", "percentage", "exact"
+    splitType: v.string(), // "equal" | "percentage" | "exact"
     splits: v.array(
       v.object({
         userId: v.id("users"),
@@ -21,36 +21,24 @@ export const createExpense = mutation({
     groupId: v.optional(v.id("groups")),
   },
   handler: async (ctx, args) => {
-    // Use centralized getCurrentUser function
     const user = await ctx.runQuery(internal.users.getCurrentUser);
 
-    // If there's a group, verify the user is a member
+    // Validate group membership if groupId provided
     if (args.groupId) {
       const group = await ctx.db.get(args.groupId);
-      if (!group) {
-        throw new Error("Group not found");
-      }
-
-      const isMember = group.members.some(
-        (member) => member.userId === user._id
-      );
-      if (!isMember) {
-        throw new Error("You are not a member of this group");
-      }
+      if (!group) throw new Error("Group not found");
+      const isMember = group.members.some((m) => m.userId === user._id);
+      if (!isMember) throw new Error("You are not a member of this group");
     }
 
-    // Verify that splits add up to the total amount (with small tolerance for floating point issues)
-    const totalSplitAmount = args.splits.reduce(
-      (sum, split) => sum + split.amount,
-      0
-    );
-    const tolerance = 0.01; // Allow for small rounding errors
-    if (Math.abs(totalSplitAmount - args.amount) > tolerance) {
-      throw new Error("Split amounts must add up to the total expense amount");
+    // Ensure splits sum to total (tolerance for float errors)
+    const totalSplit = args.splits.reduce((sum, s) => sum + s.amount, 0);
+    if (Math.abs(totalSplit - args.amount) > 0.01) {
+      throw new Error("Split amounts must equal total expense");
     }
 
-    // Create the expense
-    const expenseId = await ctx.db.insert("expenses", {
+    // Insert expense
+    return await ctx.db.insert("expenses", {
       description: args.description,
       amount: args.amount,
       category: args.category || "Other",
@@ -61,22 +49,17 @@ export const createExpense = mutation({
       groupId: args.groupId,
       createdBy: user._id,
     });
-
-    return expenseId;
   },
 });
 
-// ----------- Expenses Page -----------
-
-// Get expenses between current user and a specific person
+// Get all expenses between current user and another user
 export const getExpensesBetweenUsers = query({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     const me = await ctx.runQuery(internal.users.getCurrentUser);
     if (me._id === userId) throw new Error("Cannot query yourself");
 
-    /* ───── 1. One-on-one expenses where either user is the payer ───── */
-    // Use the compound index (`paidByUserId`,`groupId`) with groupId = undefined
+    // Expenses where either user is payer (no group)
     const myPaid = await ctx.db
       .query("expenses")
       .withIndex("by_user_and_group", (q) =>
@@ -91,24 +74,21 @@ export const getExpensesBetweenUsers = query({
       )
       .collect();
 
-    // Merge → candidate set is now just the rows either of us paid for
     const candidateExpenses = [...myPaid, ...theirPaid];
 
-    /* ───── 2. Keep only rows where BOTH are involved (payer or split) ─ */
+    // Keep only expenses where both users are involved
     const expenses = candidateExpenses.filter((e) => {
-      // me is always involved (I’m the payer OR in splits – verified below)
       const meInSplits = e.splits.some((s) => s.userId === me._id);
       const themInSplits = e.splits.some((s) => s.userId === userId);
-
-      const meInvolved = e.paidByUserId === me._id || meInSplits;
-      const themInvolved = e.paidByUserId === userId || themInSplits;
-
-      return meInvolved && themInvolved;
+      return (
+        (e.paidByUserId === me._id || meInSplits) &&
+        (e.paidByUserId === userId || themInSplits)
+      );
     });
 
     expenses.sort((a, b) => b.date - a.date);
 
-    /* ───── 3. Settlements between the two of us (groupId = undefined) ─ */
+    // Fetch settlements between users (no group)
     const settlements = await ctx.db
       .query("settlements")
       .filter((q) =>
@@ -130,29 +110,25 @@ export const getExpensesBetweenUsers = query({
 
     settlements.sort((a, b) => b.date - a.date);
 
-    /* ───── 4. Compute running balance ──────────────────────────────── */
+    // Compute running balance
     let balance = 0;
-
     for (const e of expenses) {
       if (e.paidByUserId === me._id) {
         const split = e.splits.find((s) => s.userId === userId && !s.paid);
-        if (split) balance += split.amount; // they owe me
+        if (split) balance += split.amount;
       } else {
         const split = e.splits.find((s) => s.userId === me._id && !s.paid);
-        if (split) balance -= split.amount; // I owe them
+        if (split) balance -= split.amount;
       }
     }
-
     for (const s of settlements) {
-      if (s.paidByUserId === me._id)
-        balance += s.amount; // I paid them back
-      else balance -= s.amount; // they paid me back
+      if (s.paidByUserId === me._id) balance += s.amount;
+      else balance -= s.amount;
     }
 
-    /* ───── 5. Return payload ───────────────────────────────────────── */
+    // Return expenses, settlements, other user info, and balance
     const other = await ctx.db.get(userId);
     if (!other) throw new Error("User not found");
-
     return {
       expenses,
       settlements,
@@ -169,56 +145,36 @@ export const getExpensesBetweenUsers = query({
 
 // Delete an expense
 export const deleteExpense = mutation({
-  args: {
-    expenseId: v.id("expenses"),
-  },
+  args: { expenseId: v.id("expenses") },
   handler: async (ctx, args) => {
-    // Get the current user
     const user = await ctx.runQuery(internal.users.getCurrentUser);
-
-    // Get the expense
     const expense = await ctx.db.get(args.expenseId);
-    if (!expense) {
-      throw new Error("Expense not found");
-    }
+    if (!expense) throw new Error("Expense not found");
 
-    // Check if user is authorized to delete this expense
-    // Only the creator of the expense or the payer can delete it
+    // Only creator or payer can delete
     if (expense.createdBy !== user._id && expense.paidByUserId !== user._id) {
-      throw new Error("You don't have permission to delete this expense");
+      throw new Error("Not authorized to delete this expense");
     }
 
-    // Delete any settlements that specifically reference this expense
-    // Since we can't use array.includes directly in the filter, we'll
-    // fetch all settlements and then filter in memory
+    // Remove or update related settlements
     const allSettlements = await ctx.db.query("settlements").collect();
-
-    const relatedSettlements = allSettlements.filter(
-      (settlement) =>
-        settlement.relatedExpenseIds !== undefined &&
-        settlement.relatedExpenseIds.includes(args.expenseId)
+    const related = allSettlements.filter(
+      (s) => s.relatedExpenseIds && s.relatedExpenseIds.includes(args.expenseId)
     );
 
-    for (const settlement of relatedSettlements) {
-      // Remove this expense ID from the relatedExpenseIds array
-      const updatedRelatedExpenseIds = settlement.relatedExpenseIds.filter(
+    for (const s of related) {
+      const updatedIds = s.relatedExpenseIds.filter(
         (id) => id !== args.expenseId
       );
-
-      if (updatedRelatedExpenseIds.length === 0) {
-        // If this was the only related expense, delete the settlement
-        await ctx.db.delete(settlement._id);
+      if (updatedIds.length === 0) {
+        await ctx.db.delete(s._id);
       } else {
-        // Otherwise update the settlement to remove this expense ID
-        await ctx.db.patch(settlement._id, {
-          relatedExpenseIds: updatedRelatedExpenseIds,
-        });
+        await ctx.db.patch(s._id, { relatedExpenseIds: updatedIds });
       }
     }
 
-    // Delete the expense
+    // Delete expense
     await ctx.db.delete(args.expenseId);
-
     return { success: true };
   },
 });

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Users } from "lucide-react";
 
 export function GroupList({ groups }) {
+  // Show placeholder if no groups exist
   if (!groups || groups.length === 0) {
     return (
       <div className="text-center !py-6">
@@ -16,7 +17,7 @@ export function GroupList({ groups }) {
   return (
     <div className="space-y-3">
       {groups.map((group) => {
-        // Calculate total balance in the group
+        // Calculate and check group balance
         const balance = group.balance || 0;
         const hasBalance = balance !== 0;
 
@@ -26,6 +27,7 @@ export function GroupList({ groups }) {
             key={group.id}
             className="flex items-center justify-between hover:bg-muted !mb-2 !p-2 rounded-md transition-colors"
           >
+            {/* Group icon and details */}
             <div className="flex items-center gap-3">
               <div className="bg-primary/10 !p-2 rounded-md">
                 <Users className="h-5 w-5 text-primary" />
@@ -38,6 +40,7 @@ export function GroupList({ groups }) {
               </div>
             </div>
 
+            {/* Display group balance if non-zero */}
             {hasBalance && (
               <span
                 className={`text-sm font-medium ${

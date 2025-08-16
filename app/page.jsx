@@ -10,24 +10,29 @@ import { FEATURES, STEPS, TESTIMONIALS } from "@/lib/landing";
 export default function Home() {
   return (
     <div className="flex flex-col !pt-16">
-      {/* ───── Hero ───── */}
+      {/* ───── Hero Section ───── */}
       <section className="!mt-20 !pb-12 space-y-10 md:space-y-15 !px-5">
         <div className="container !mx-auto !mb-15 !px-4 md:!px-6 text-center space-y-6">
+          {/* Tagline */}
           <Badge
             variant="outline"
             className="bg-green-100 text-green-700 !mb-6 !px-2 !py-0.5"
           >
             Split expenses. Simplify life.
           </Badge>
+
+          {/* Main headline */}
           <h1 className="gradient-title !mx-auto !mb-6 max-w-6xl text-4xl font-bold md:text-8xl">
             The smartest way to split expenses with friends
           </h1>
 
+          {/* Supporting description */}
           <p className="!mx-auto !mb-6 max-w-[700px] text-gray-500 md:text-xl/relaxed">
             Track shared expenses, split bills effortlessly, and settle up
             quickly. Never worry about who owes who again.
           </p>
 
+          {/* Call-to-action buttons */}
           <div className="flex flex-col items-center gap-4 sm:flex-row justify-center">
             <Button
               asChild
@@ -51,6 +56,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Hero banner image */}
         <div className="container !mx-auto max-w-5xl overflow-hidden rounded-xl shadow-xl">
           <div className="gradient !p-1 aspect-[16/9]">
             <Image
@@ -65,9 +71,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───── Features ───── */}
+      {/* ───── Features Section ───── */}
       <section id="features" className="bg-gray-50 !py-20">
         <div className="container !mx-auto !px-4 md:!px-6 text-center">
+          {/* Section header */}
           <Badge
             variant="outline"
             className="bg-green-100 text-green-700 !px-2 !py-0.5"
@@ -82,6 +89,7 @@ export default function Home() {
             expenses with ease.
           </p>
 
+          {/* Features list */}
           <div className="!mx-auto !mt-12 grid max-w-5xl gap-6 md:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ title, Icon, bg, color, description }) => (
               <Card
@@ -100,9 +108,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───── How it works ───── */}
+      {/* ───── How It Works Section ───── */}
       <section id="how-it-works" className="!py-20">
         <div className="container !mx-auto !px-4 md:!px-6 text-center">
+          {/* Section header */}
           <Badge
             variant="outline"
             className="bg-green-100 text-green-700 !px-2 !py-0.5"
@@ -117,6 +126,7 @@ export default function Home() {
             with friends.
           </p>
 
+          {/* Step cards */}
           <div className="!mx-auto !mt-12 grid max-w-5xl gap-8 md:grid-cols-3">
             {STEPS.map(({ label, title, description }) => (
               <div key={label} className="flex flex-col items-center space-y-4">
@@ -131,9 +141,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───── Testimonials ───── */}
+      {/* ───── Testimonials Section ───── */}
       <section className="bg-gray-50 !py-20">
         <div className="container !mx-auto !px-4 md:!px-6 text-center">
+          {/* Section header */}
           <Badge
             variant="outline"
             className="bg-green-100 text-green-700 !px-2 !py-0.5"
@@ -144,6 +155,7 @@ export default function Home() {
             What our users are saying
           </h2>
 
+          {/* Testimonials grid */}
           <div className="!mx-auto !mt-12 grid max-w-5xl gap-6 md:grid-cols-2 lg:grid-cols-3">
             {TESTIMONIALS.map(({ quote, name, role, image }) => (
               <Card key={name} className="flex flex-col justify-between !py-4">
@@ -151,7 +163,7 @@ export default function Home() {
                   <p className="text-gray-500 !mb-4">{quote}</p>
                   <div className="flex items-center space-x-3 ">
                     <Avatar>
-                      {/* Placeholder avatar */}
+                      {/* User avatar or fallback */}
                       <AvatarImage src={image} alt={name} />
                       <AvatarFallback className="uppercase">
                         {name.charAt(0)}
@@ -169,9 +181,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ───── Call‑to‑Action ───── */}
+      {/* ───── Call-to-Action Section ───── */}
       <section className="!py-20 gradient">
         <div className="container !mx-auto  !px-4 md:!px-6 text-center space-y-6">
+          {/* Heading and description */}
           <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl text-white !mb-6">
             Ready to simplify expense sharing?
           </h2>
@@ -179,6 +192,8 @@ export default function Home() {
             Join thousands of users who have made splitting expenses
             stress-free.
           </p>
+
+          {/* CTA button */}
           <Button
             asChild
             size="lg"

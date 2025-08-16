@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 export function GroupMembers({ members }) {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
 
+  // Show placeholder if no members exist
   if (!members || members.length === 0) {
     return (
       <div className="text-center !py-4 text-muted-foreground">
@@ -23,13 +24,18 @@ export function GroupMembers({ members }) {
         const isAdmin = member.role === "admin";
 
         return (
-          <div key={member.id} className="flex items-center justify-between !mb-3">
+          <div
+            key={member.id}
+            className="flex items-center justify-between !mb-3"
+          >
+            {/* Avatar and name */}
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={member.imageUrl} />
                 <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
+                {/* Show "You" badge for current user */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
                     {isCurrentUser ? "You" : member.name}
@@ -40,6 +46,7 @@ export function GroupMembers({ members }) {
                     </Badge>
                   )}
                 </div>
+                {/* Show admin label */}
                 {isAdmin && (
                   <span className="text-xs text-muted-foreground">Admin</span>
                 )}

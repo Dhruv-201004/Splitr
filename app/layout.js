@@ -35,9 +35,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-/*
- To Run the App
- npx inngest-cli@latest dev
- npx convex dev
- npm run dev 
- */
+

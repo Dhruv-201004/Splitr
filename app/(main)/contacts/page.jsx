@@ -17,25 +17,24 @@ export default function ContactsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Fetch all contacts (users and groups)
   const { data, isLoading } = useConvexQuery(api.contacts.getAllContacts);
 
-  // Check for the createGroup parameter when the component mounts
+  // Handle "createGroup" query param to auto-open modal
   useEffect(() => {
     const createGroupParam = searchParams.get("createGroup");
 
     if (createGroupParam === "true") {
-      // Open the modal
       setIsCreateGroupModalOpen(true);
 
-      // Remove the parameter from the URL
+      // Remove the param from URL after opening modal
       const url = new URL(window.location.href);
       url.searchParams.delete("createGroup");
-
-      // Replace the current URL without the parameter
       router.replace(url.pathname + url.search);
     }
   }, [searchParams, router]);
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="container !mx-auto !py-12">
@@ -44,20 +43,25 @@ export default function ContactsPage() {
     );
   }
 
+  // Fallback empty arrays if no data
   const { users, groups } = data || { users: [], groups: [] };
 
   return (
     <div className="container !mx-auto !py-6">
+      {/* Header with "Create Group" button */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between !mb-6">
         <h1 className="text-5xl gradient-title">Contacts</h1>
-        <Button onClick={() => setIsCreateGroupModalOpen(true)} className={"!px-3 !py-2"}>
+        <Button
+          onClick={() => setIsCreateGroupModalOpen(true)}
+          className={"!px-3 !py-2"}
+        >
           <Plus className="!mr-2 h-4 w-4" />
           Create Group
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Individual Contacts */}
+        {/* Individual contacts section */}
         <div>
           <h2 className="text-xl font-bold !mb-4 flex items-center">
             <User className="!mr-2 h-5 w-5" />
@@ -99,7 +103,7 @@ export default function ContactsPage() {
           )}
         </div>
 
-        {/* Groups */}
+        {/* Groups section */}
         <div>
           <h2 className="text-xl font-bold !mb-4 flex items-center">
             <Users className="!mr-2 h-5 w-5" />
@@ -139,6 +143,7 @@ export default function ContactsPage() {
         </div>
       </div>
 
+      {/* Create Group Modal */}
       <CreateGroupModal
         isOpen={isCreateGroupModalOpen}
         onClose={() => setIsCreateGroupModalOpen(false)}

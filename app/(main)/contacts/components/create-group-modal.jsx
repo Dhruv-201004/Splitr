@@ -35,16 +35,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+// Schema validation for group form
 const groupSchema = z.object({
   name: z.string().min(1, "Group name is required"),
   description: z.string().optional(),
 });
 
 export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
+  // State management for members and search
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [commandOpen, setCommandOpen] = useState(false);
 
+  // Fetch current user and search results
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const createGroup = useConvexMutation(api.contacts.createGroup);
   const { data: searchResults, isLoading: isSearching } = useConvexQuery(
@@ -52,6 +55,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
     { query: searchQuery }
   );
 
+  // Form setup with validation
   const {
     register,
     handleSubmit,
@@ -65,6 +69,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
     },
   });
 
+  // Add selected member if not already included
   const addMember = (user) => {
     if (!selectedMembers.some((m) => m.id === user.id)) {
       setSelectedMembers([...selectedMembers, user]);
@@ -72,29 +77,29 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
     setCommandOpen(false);
   };
 
+  // Remove member by ID
   const removeMember = (userId) => {
     setSelectedMembers(selectedMembers.filter((m) => m.id !== userId));
   };
 
+  // Handle form submission
   const onSubmit = async (data) => {
     try {
-      // Extract member IDs
       const memberIds = selectedMembers.map((member) => member.id);
 
-      // Create the group
+      // Create group with Convex mutation
       const groupId = await createGroup.mutate({
         name: data.name,
         description: data.description,
         members: memberIds,
       });
 
-      // Success
       toast.success("Group created successfully!");
       reset();
       setSelectedMembers([]);
       onClose();
 
-      // Redirect to the new group page
+      // Callback after success
       if (onSuccess) {
         onSuccess(groupId);
       }
@@ -103,6 +108,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
     }
   };
 
+  // Reset state and close modal
   const handleClose = () => {
     reset();
     setSelectedMembers([]);
@@ -117,6 +123,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Group name input */}
           <div className="space-y-2 !mb-2">
             <Label htmlFor="name" className="!mb-2">
               Group Name
@@ -132,6 +139,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
             )}
           </div>
 
+          {/* Group description input */}
           <div className="space-y-2 !mb-2">
             <Label htmlFor="description" className="!mb-2">
               Description (Optional)
@@ -144,6 +152,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
             />
           </div>
 
+          {/* Members selection */}
           <div className="space-y-2 !mb-2">
             <Label className="!mb-2">Members</Label>
             <div className="flex flex-wrap gap-2 !mb-2">
@@ -184,7 +193,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
                 </Badge>
               ))}
 
-              {/* Add member button with dropdown */}
+              {/* Add member button with search */}
               <Popover open={commandOpen} onOpenChange={setCommandOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -206,6 +215,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
                       onValueChange={setSearchQuery}
                     />
                     <CommandList>
+                      {/* Empty state / Loading / No results */}
                       <CommandEmpty className="!py-6">
                         {searchQuery.length < 2 ? (
                           <p className="!py-3 !px-4 text-sm text-center text-muted-foreground">
@@ -221,10 +231,12 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
                           </p>
                         )}
                       </CommandEmpty>
+
+                      {/* User search results */}
                       <CommandGroup className="!p-2">
                         <div className="!px-2 !py-1.5 text-xs font-medium text-muted-foreground">
                           Users
-                        </div>{" "}
+                        </div>
                         {searchResults?.map((user) => (
                           <CommandItem
                             key={user.id}
@@ -254,6 +266,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
                 </PopoverContent>
               </Popover>
             </div>
+            {/* Validation message for empty members */}
             {selectedMembers.length === 0 && (
               <p className="text-sm text-amber-600">
                 Add at least one other person to the group
@@ -261,6 +274,7 @@ export function CreateGroupModal({ isOpen, onClose, onSuccess }) {
             )}
           </div>
 
+          {/* Action buttons */}
           <DialogFooter>
             <Button
               type="button"

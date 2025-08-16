@@ -18,7 +18,7 @@ export function SplitSelector({
   const [totalPercentage, setTotalPercentage] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  // Calculate splits when inputs change
+  // Initialize and recalculate splits whenever input props change
   useEffect(() => {
     if (!amount || amount <= 0 || participants.length === 0) {
       return;
@@ -27,7 +27,7 @@ export function SplitSelector({
     let newSplits = [];
 
     if (type === "equal") {
-      // Equal splits
+      // Distribute amount equally among all participants
       const shareAmount = amount / participants.length;
       newSplits = participants.map((participant) => ({
         userId: participant.id,
@@ -39,7 +39,7 @@ export function SplitSelector({
         paid: participant.id === paidByUserId,
       }));
     } else if (type === "percentage") {
-      // Initialize percentage splits evenly
+      // Distribute amount by percentage (initialized evenly)
       const evenPercentage = 100 / participants.length;
       newSplits = participants.map((participant) => ({
         userId: participant.id,
@@ -51,7 +51,7 @@ export function SplitSelector({
         paid: participant.id === paidByUserId,
       }));
     } else if (type === "exact") {
-      // Initialize exact splits evenly
+      // Distribute amount by exact values (initialized evenly)
       const evenAmount = amount / participants.length;
       newSplits = participants.map((participant) => ({
         userId: participant.id,
@@ -79,15 +79,14 @@ export function SplitSelector({
     setTotalAmount(newTotalAmount);
     setTotalPercentage(newTotalPercentage);
 
-    // Notify parent about the split changes
+    // Notify parent component of updated splits
     if (onSplitsChange) {
       onSplitsChange(newSplits);
     }
   }, [type, amount, participants, paidByUserId, onSplitsChange]);
 
-  // Update the percentage splits - no automatic adjustment of other values
+  // Update a participant's percentage without adjusting others
   const updatePercentageSplit = (userId, newPercentage) => {
-    // Update just this user's percentage and recalculate amount
     const updatedSplits = splits.map((split) => {
       if (split.userId === userId) {
         return {
@@ -114,17 +113,15 @@ export function SplitSelector({
     setTotalAmount(newTotalAmount);
     setTotalPercentage(newTotalPercentage);
 
-    // Notify parent about the split changes
     if (onSplitsChange) {
       onSplitsChange(updatedSplits);
     }
   };
 
-  // Update the exact amount splits - no automatic adjustment of other values
+  // Update a participant's exact amount without adjusting others
   const updateExactSplit = (userId, newAmount) => {
     const parsedAmount = parseFloat(newAmount) || 0;
 
-    // Update just this user's amount and recalculate percentage
     const updatedSplits = splits.map((split) => {
       if (split.userId === userId) {
         return {
@@ -151,13 +148,12 @@ export function SplitSelector({
     setTotalAmount(newTotalAmount);
     setTotalPercentage(newTotalPercentage);
 
-    // Notify parent about the split changes
     if (onSplitsChange) {
       onSplitsChange(updatedSplits);
     }
   };
 
-  // Check if totals are valid
+  // Validation checks for percentage and amount accuracy
   const isPercentageValid = Math.abs(totalPercentage - 100) < 0.01;
   const isAmountValid = Math.abs(totalAmount - amount) < 0.01;
 
@@ -168,6 +164,7 @@ export function SplitSelector({
           key={split.userId}
           className="flex items-center justify-between gap-4 !mb-4"
         >
+          {/* Participant details */}
           <div className="flex items-center gap-2 min-w-[120px]">
             <Avatar className="h-7 w-7">
               <AvatarImage src={split.imageUrl} />
@@ -178,12 +175,14 @@ export function SplitSelector({
             </span>
           </div>
 
+          {/* Equal split display */}
           {type === "equal" && (
             <div className="text-right text-sm">
               ${split.amount.toFixed(2)} ({split.percentage.toFixed(1)}%)
             </div>
           )}
 
+          {/* Percentage split controls */}
           {type === "percentage" && (
             <div className="flex items-center gap-4 flex-1">
               <Slider
@@ -211,11 +210,14 @@ export function SplitSelector({
                   className="w-16 h-8"
                 />
                 <span className="text-sm text-muted-foreground">%</span>
-                <span className="text-sm !ml-1">${split.amount.toFixed(2)}</span>
+                <span className="text-sm !ml-1">
+                  ${split.amount.toFixed(2)}
+                </span>
               </div>
             </div>
           )}
 
+          {/* Exact amount split controls */}
           {type === "exact" && (
             <div className="flex items-center gap-2 flex-1">
               <div className="flex-1"></div>
@@ -224,7 +226,7 @@ export function SplitSelector({
                 <Input
                   type="number"
                   min="0"
-                  max={amount * 2} // Allow values even higher than total for flexibility
+                  max={amount * 2} // Allow some flexibility above total
                   step="0.01"
                   value={split.amount.toFixed(2)}
                   onChange={(e) =>
@@ -241,7 +243,7 @@ export function SplitSelector({
         </div>
       ))}
 
-      {/* Total row */}
+      {/* Totals row */}
       <div className="flex justify-between border-t !pt-3 !mt-3">
         <span className="font-medium">Total</span>
         <div className="text-right">
@@ -260,7 +262,7 @@ export function SplitSelector({
         </div>
       </div>
 
-      {/* Validation warnings */}
+      {/* Validation messages */}
       {type === "percentage" && !isPercentageValid && (
         <div className="text-sm text-amber-600 !mt-2">
           The percentages should add up to 100%.

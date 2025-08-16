@@ -12,9 +12,10 @@ export function SettlementList({
   isGroupSettlement = false,
   userLookupMap,
 }) {
-  const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
+  const { data: currentUser } = useConvexQuery(api.users.getCurrentUser); // Fetch logged-in user
   console.log("settlements", settlements);
 
+  // Handle case when no settlements are available
   if (!settlements || !settlements.length) {
     return (
       <Card>
@@ -25,9 +26,8 @@ export function SettlementList({
     );
   }
 
-  // Helper to get user details from cache or look up
+  // Resolve user details (fallback for unknown users)
   const getUserDetails = (userId) => {
-    // Simplified fallback
     return {
       name:
         userId === currentUser?._id
@@ -41,8 +41,8 @@ export function SettlementList({
   return (
     <div className="flex flex-col gap-4">
       {settlements.map((settlement) => {
-        const payer = getUserDetails(settlement.paidByUserId);
-        const receiver = getUserDetails(settlement.receivedByUserId);
+        const payer = getUserDetails(settlement.paidByUserId); // User who paid
+        const receiver = getUserDetails(settlement.receivedByUserId); // User who received
         const isCurrentUserPayer = settlement.paidByUserId === currentUser?._id;
         const isCurrentUserReceiver =
           settlement.receivedByUserId === currentUser?._id;
@@ -60,6 +60,7 @@ export function SettlementList({
                     <ArrowLeftRight className="h-5 w-5 text-primary" />
                   </div>
 
+                  {/* Settlement details */}
                   <div>
                     <h3 className="font-medium">
                       {isCurrentUserPayer
@@ -82,6 +83,7 @@ export function SettlementList({
                   </div>
                 </div>
 
+                {/* Amount and status */}
                 <div className="text-right">
                   <div className="font-medium">
                     ${settlement.amount.toFixed(2)}

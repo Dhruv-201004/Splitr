@@ -11,12 +11,14 @@ export function BalanceSummary({ balances }) {
 
   return (
     <div className="space-y-4">
+      {/* No balances to display */}
       {!hasOwed && !hasOwing && (
         <div className="text-center !py-6">
           <p className="text-muted-foreground">You're all settled up!</p>
         </div>
       )}
 
+      {/* People who owe you money */}
       {hasOwed && (
         <div>
           <h3 className="text-sm font-medium flex items-center !mb-3">
@@ -46,6 +48,7 @@ export function BalanceSummary({ balances }) {
         </div>
       )}
 
+      {/* People you owe money to */}
       {hasOwing && (
         <div>
           <h3 className="text-sm font-medium flex items-center !mb-3">

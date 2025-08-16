@@ -1,90 +1,84 @@
-# Welcome to your Convex functions directory!
+# Splitr
 
-Write your Convex functions here.
-See https://docs.convex.dev/functions for more.
+Splitr makes managing shared expenses effortless. Whether you’re splitting rent with roommates, tracking group trip costs, or managing office lunches, Splitr keeps everything transparent and stress-free.
 
-A query function that takes two arguments looks like:
+🔗 **Live Demo:** [splitr-gamma-five.vercel.app](https://splitr-gamma-five.vercel.app/)
 
-```ts
-// convex/myFunctions.ts
-import { query } from "./_generated/server";
-import { v } from "convex/values";
+---
 
-export const myQueryFunction = query({
-  // Validators for arguments.
-  args: {
-    first: v.number(),
-    second: v.string(),
-  },
+## ✨ Features
+- 🔗 **Smart Settlements** – Automatically calculate who owes whom.  
+- 👥 **Groups & 1-to-1 Expenses** – Manage both group and personal expenses.  
+- 📊 **Flexible Splits** – Equal, percentage, or exact amounts.  
+- 🔍 **Quick Search** – Find friends or colleagues instantly.  
+- 📱 **Responsive Design** – Works seamlessly on desktop and mobile.  
 
-  // Function implementation.
-  handler: async (ctx, args) => {
-    // Read the database as many times as you need here.
-    // See https://docs.convex.dev/database/reading-data.
-    const documents = await ctx.db.query("tablename").collect();
+---
 
-    // Arguments passed from the client are properties of the args object.
-    console.log(args.first, args.second);
+## 🚀 Tech Stack
+- **Frontend:** [Next.js](https://nextjs.org/), [React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/)  
+- **Backend & Database:** [Convex](https://convex.dev/)  
+- **Authentication:** [Clerk](https://clerk.com/)  
+- **Deployment:** [Vercel](https://vercel.com/)  
 
-    // Write arbitrary JavaScript here: filter, aggregate, build derived data,
-    // remove non-public properties, or create new objects.
-    return documents;
-  },
-});
+---
+
+## 🛠️ Getting Started
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/splitr.git
+cd splitr
+```
+### 2. Install dependencies
+```
+bash
+npm install
 ```
 
-Using this query function in a React component looks like:
+### 3. Configure environment variables
+Create a .env.local file in the root and add:
+```env
+# Convex backend deployment
+CONVEX_DEPLOY_KEY=prod:<your-deploy-key>
+CONVEX_DEPLOYMENT=prod:<your-deployment-id>
+NEXT_PUBLIC_CONVEX_URL=https://<your-convex-subdomain>.convex.cloud
 
-```ts
-const data = useQuery(api.myFunctions.myQueryFunction, {
-  first: 10,
-  second: "hello",
-});
+# Clerk authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_<your-publishable-key>
+CLERK_SECRET_KEY=sk_test_<your-secret-key>
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+CLERK_JWT_ISSUER_DOMAIN=https://<your-clerk-subdomain>.clerk.accounts.dev
+
+# Email sending via Resend
+RESEND_API_KEY=re_<your-resend-api-key>
+
+# Google API key for Gemini or other integrations
+GEMINI_API_KEY=<your-google-api-key>
 ```
 
-A mutation function looks like:
-
-```ts
-// convex/myFunctions.ts
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
-
-export const myMutationFunction = mutation({
-  // Validators for arguments.
-  args: {
-    first: v.string(),
-    second: v.string(),
-  },
-
-  // Function implementation.
-  handler: async (ctx, args) => {
-    // Insert or modify documents in the database here.
-    // Mutations can also read from the database like queries.
-    // See https://docs.convex.dev/database/writing-data.
-    const message = { body: args.first, author: args.second };
-    const id = await ctx.db.insert("messages", message);
-
-    // Optionally, return a value from your mutation.
-    return await ctx.db.get(id);
-  },
-});
+### 4. Run the development server
+```bash
+npm run dev
 ```
+Your app should now be running at http://localhost:3000.
 
-Using this mutation function in a React component looks like:
+---
 
-```ts
-const mutation = useMutation(api.myFunctions.myMutationFunction);
-function handleButtonPress() {
-  // fire and forget, the most common way to use mutations
-  mutation({ first: "Hello!", second: "me" });
-  // OR
-  // use the result once the mutation has completed
-  mutation({ first: "Hello!", second: "me" }).then((result) =>
-    console.log(result),
-  );
-}
-```
+📸 Screenshots
+Authentication & Onboarding
+<img src="/screenshots/auth.png" alt="Authentication" width="800"/>
 
-Use the Convex CLI to push your functions to a deployment. See everything
-the Convex CLI can do by running `npx convex -h` in your project root
-directory. To learn more, launch the docs with `npx convex docs`.
+Dashboard Overview
+<img src="/screenshots/dashboard.png" alt="Dashboard" width="800"/>
+
+Group Expense Management
+<img src="/screenshots/group.png" alt="Group Expenses" width="800"/>
+
+Settlements & Payments
+<img src="/screenshots/settlement.png" alt="Settlements" width="800"/>
+
+---
+
+Made with ❤️ by Dhruv

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 export function ExpenseSummary({ monthlySpending, totalSpent }) {
-  // Format monthly data for chart
+  // Month labels for chart display
   const monthNames = [
     "Jan",
     "Feb",
@@ -28,6 +28,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
     "Dec",
   ];
 
+  // Prepare data for chart visualization
   const chartData =
     monthlySpending?.map((item) => {
       const date = new Date(item.month);
@@ -37,7 +38,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
       };
     }) || [];
 
-  // Get current year
+  // Current year and month for summary display
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
 
@@ -47,6 +48,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
         <CardTitle>Expense Summary</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Monthly and yearly totals */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-muted rounded-lg !p-4">
             <p className="text-sm text-muted-foreground">Total this month</p>
@@ -62,6 +64,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
           </div>
         </div>
 
+        {/* Monthly spending bar chart */}
         <div className="h-64 !mt-6">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
@@ -77,6 +80,7 @@ export function ExpenseSummary({ monthlySpending, totalSpent }) {
           </ResponsiveContainer>
         </div>
 
+        {/* Footer note */}
         <p className="text-xs text-muted-foreground text-center !mt-2">
           Monthly spending for {currentYear}
         </p>

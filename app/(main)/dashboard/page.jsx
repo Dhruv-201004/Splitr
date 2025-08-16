@@ -18,21 +18,26 @@ import { BalanceSummary } from "./components/balance-summary";
 import { GroupList } from "./components/group-list";
 
 export default function Dashboard() {
+  // Fetch balance data
   const { data: balances, isLoading: balancesLoading } = useConvexQuery(
     api.dashboard.getUserBalances
   );
 
+  // Fetch user's groups
   const { data: groups, isLoading: groupsLoading } = useConvexQuery(
     api.dashboard.getUserGroups
   );
 
+  // Fetch total spent data
   const { data: totalSpent, isLoading: totalSpentLoading } = useConvexQuery(
     api.dashboard.getTotalSpent
   );
 
+  // Fetch monthly spending data
   const { data: monthlySpending, isLoading: monthlySpendingLoading } =
     useConvexQuery(api.dashboard.getMonthlySpending);
 
+  // Global loading state
   const isLoading =
     balancesLoading ||
     groupsLoading ||
@@ -42,11 +47,13 @@ export default function Dashboard() {
   return (
     <div className="container !mx-auto !py-6 space-y-6">
       {isLoading ? (
+        // Show loader while fetching data
         <div className="w-full !py-12 flex justify-center">
           <BarLoader width={"100%"} color="#36d7b7" />
         </div>
       ) : (
         <>
+          {/* Header with action button */}
           <div className="flex  justify-between flex-col sm:flex-row sm:items-center gap-4 !mb-6">
             <h1 className="text-5xl gradient-title">Dashboard</h1>
             <Button className={"!px-3 !py-2"} asChild>
@@ -67,22 +74,22 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {balances?.totalBalance > 0 ? (
+                  {balances?.totalBalance.toFixed(2) > 0 ? (
                     <span className="text-green-600">
                       +${balances?.totalBalance.toFixed(2)}
                     </span>
-                  ) : balances?.totalBalance < 0 ? (
+                  ) : balances?.totalBalance.toFixed(2) < 0 ? (
                     <span className="text-red-600">
                       -${Math.abs(balances?.totalBalance).toFixed(2)}
                     </span>
                   ) : (
-                    <span>$0.00</span>
+                    <span className="!text-gray-600">$0.00</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground !mt-1">
-                  {balances?.totalBalance > 0
+                  {balances?.totalBalance.toFixed(2) > 0
                     ? "You are owed money"
-                    : balances?.totalBalance < 0
+                    : balances?.totalBalance.toFixed(2) < 0
                       ? "You owe money"
                       : "All settled up!"}
                 </p>
@@ -137,7 +144,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Expense summary */}
+              {/* Expense summary chart */}
               <ExpenseSummary
                 monthlySpending={monthlySpending}
                 totalSpent={totalSpent}
@@ -146,7 +153,7 @@ export default function Dashboard() {
 
             {/* Right column */}
             <div className="space-y-6">
-              {/* Balance details */}
+              {/* Balance details section */}
               <Card className={"!py-6 !mb-6"}>
                 <CardHeader className="!pb-3 !px-6">
                   <div className="flex items-center justify-between">
@@ -164,7 +171,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {/* Groups */}
+              {/* Groups section */}
               <Card>
                 <CardHeader className="!pb-3">
                   <div className="flex items-center justify-between">

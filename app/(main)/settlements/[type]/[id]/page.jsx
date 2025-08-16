@@ -15,6 +15,7 @@ export default function SettlementPage() {
   const router = useRouter();
   const { type, id } = params;
 
+  // Fetch settlement data (user or group)
   const { data, isLoading } = useConvexQuery(
     api.settlements.getSettlementData,
     {
@@ -23,6 +24,7 @@ export default function SettlementPage() {
     }
   );
 
+  // Show loader while fetching settlement data
   if (isLoading) {
     return (
       <div className="container !mx-auto !py-12">
@@ -31,9 +33,8 @@ export default function SettlementPage() {
     );
   }
 
-  // Function to handle after successful settlement creation
+  // Handle redirect after successful settlement
   const handleSuccess = () => {
-    // Redirect based on type
     if (type === "user") {
       router.push(`/person/${id}`);
     } else if (type === "group") {
@@ -43,6 +44,7 @@ export default function SettlementPage() {
 
   return (
     <div className="container !mx-auto !py-6 max-w-lg">
+      {/* Back button */}
       <Button
         variant="outline"
         size="sm"
@@ -53,6 +55,7 @@ export default function SettlementPage() {
         Back
       </Button>
 
+      {/* Page heading */}
       <div className="!mb-6">
         <h1 className="text-5xl gradient-title">Record a settlement</h1>
         <p className="text-muted-foreground !mt-1">
@@ -62,10 +65,12 @@ export default function SettlementPage() {
         </p>
       </div>
 
+      {/* Settlement form card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             {type === "user" ? (
+              // Show counterpart avatar for user settlement
               <Avatar className="h-10 w-10">
                 <AvatarImage src={data?.counterpart?.imageUrl} />
                 <AvatarFallback>
@@ -73,6 +78,7 @@ export default function SettlementPage() {
                 </AvatarFallback>
               </Avatar>
             ) : (
+              // Show group icon for group settlement
               <div className="bg-primary/10 !p-2 rounded-md">
                 <Users className="h-6 w-6 text-primary" />
               </div>
@@ -82,6 +88,8 @@ export default function SettlementPage() {
             </CardTitle>
           </div>
         </CardHeader>
+
+        {/* Settlement form */}
         <CardContent>
           <SettlementForm
             entityType={type}

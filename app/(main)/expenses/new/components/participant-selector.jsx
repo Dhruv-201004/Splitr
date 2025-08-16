@@ -26,32 +26,27 @@ export function ParticipantSelector({ participants, onParticipantsChange }) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Search for users
+  // Fetch users matching search query
   const { data: searchResults, isLoading } = useConvexQuery(
     api.users.searchUsers,
     { query: searchQuery }
   );
 
-  // Add a participant
+  // Add participant if not already included
   const addParticipant = (user) => {
-    // Check if already added
     if (participants.some((p) => p.id === user.id)) {
       return;
     }
-
-    // Add to list
     onParticipantsChange([...participants, user]);
     setOpen(false);
     setSearchQuery("");
   };
 
-  // Remove a participant
+  // Remove participant, except the current user
   const removeParticipant = (userId) => {
-    // Don't allow removing yourself
     if (userId === currentUser._id) {
       return;
     }
-
     onParticipantsChange(participants.filter((p) => p.id !== userId));
   };
 
@@ -87,6 +82,7 @@ export function ParticipantSelector({ participants, onParticipantsChange }) {
           </Badge>
         ))}
 
+        {/* Allow adding new participants only if less than 2 are selected */}
         {participants.length < 2 && (
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
